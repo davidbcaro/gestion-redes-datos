@@ -39,12 +39,25 @@ PROGRAMA = {
 }
 
 # Las carpetas del repositorio no llevan tildes; aqui se recupera el nombre correcto.
+# ===========================================================================
+#  COLOR DE CADA FASE
+#  Cambia aqui el `color` de una fase y cambia su panel en la portada y la
+#  cabecera de su pagina. Todo lo que se pinta encima —titulares, cifras,
+#  numeral, estado apagado— se recalcula solo a partir de ese valor, asi que
+#  puedes poner el color que quieras: el generador avisa si alguno deja el
+#  texto por debajo del contraste minimo.
+# ===========================================================================
 FASES = {
-    'Fase 1 - Analisis': ('Análisis', 1),
-    'Fase 2 - Planeacion': ('Planeación', 2),
-    'Fase 3 - Ejecucion': ('Ejecución', 3),
-    'Fase 4 - Evaluacion': ('Evaluación', 4),
+    'Fase 1 - Analisis': {'nombre': 'Análisis', 'numero': 1, 'color': '#dcefd2'},
+    'Fase 2 - Planeacion': {'nombre': 'Planeación', 'numero': 2, 'color': '#cfe8e0'},
+    'Fase 3 - Ejecucion': {'nombre': 'Ejecución', 'numero': 3, 'color': '#d4e5f2'},
+    'Fase 4 - Evaluacion': {'nombre': 'Evaluación', 'numero': 4, 'color': '#e0e2f0'},
 }
+
+# Tintas base sobre campo claro y sobre campo oscuro.
+TINTA_OSCURA = '#0a1710'
+TINTA_CLARA = '#ffffff'
+PAPEL = '#f2f5f1'
 SECCIONES_EXTRA = [
     ('00 - Informacion general', 'Información general',
      'Documentos institucionales del programa, material de apoyo y guías para el aprendiz.'),
@@ -101,6 +114,59 @@ TIPOS = {
 
 
 # --------------------------------------------------------------------------- utilidades
+
+def _canal(v):
+    v = v / 255
+    return v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4
+
+
+def luminancia(color):
+    r, g, b = (int(color[i:i + 2], 16) for i in (1, 3, 5))
+    return 0.2126 * _canal(r) + 0.7152 * _canal(g) + 0.0722 * _canal(b)
+
+
+def contraste(a, b):
+    la, lb = luminancia(a), luminancia(b)
+    return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+
+
+def mezclar(a, b, peso):
+    """El color `a` al `peso` indicado sobre `b`."""
+    ca = [int(a[i:i + 2], 16) for i in (1, 3, 5)]
+    cb = [int(b[i:i + 2], 16) for i in (1, 3, 5)]
+    return '#{:02x}{:02x}{:02x}'.format(
+        *(round(x * peso + y * (1 - peso)) for x, y in zip(ca, cb)))
+
+
+def paleta_fase(color, nombre=''):
+    """Deriva del color de la fase todo lo que se pinta encima.
+
+    Devuelve el campo, su tinta principal y atenuada, el numeral y la versión
+    apagada del campo, comprobando que ninguna pareja baje del mínimo legible.
+    """
+    claro = luminancia(color) > 0.3
+    tinta = TINTA_OSCURA if claro else TINTA_CLARA
+    paleta = {
+        'campo': color,
+        'tinta': tinta,
+        'suave': mezclar(tinta, color, 0.72),
+        # El campo identifica la fase; el numeral sigue siendo la marca SENA.
+        'numeral': '#2e7d00' if claro else '#5fd424',
+        'apagado': mezclar(color, PAPEL, 0.32) if claro else mezclar(color, '#050906', 0.4),
+    }
+    for clave, minimo in (('tinta', 4.5), ('suave', 4.5), ('numeral', 3.0)):
+        real = contraste(paleta[clave], color)
+        if real < minimo:
+            print('  AVISO  {}: «{}» sobre {} da {:.2f}:1, por debajo de {}:1'.format(
+                nombre or color, clave, color, real, minimo))
+    return paleta
+
+
+def vars_fase(paleta):
+    """Las variables CSS que llevan el color de la fase al marcado."""
+    return ('--campo:{campo};--campo-tinta:{tinta};--campo-suave:{suave};'
+            '--campo-numeral:{numeral};--campo-apagado:{apagado}').format(**paleta)
+
 
 def plural(n, singular, prural=None):
     return '{} {}'.format(n, singular if n == 1 else (prural or singular + 's'))
@@ -245,12 +311,15 @@ def recolectar():
             mapa_ovas = json.load(f)
 
     fases = []
-    for carpeta, (nombre, numero) in sorted(FASES.items(), key=lambda kv: kv[1][1]):
+    for carpeta, cfg in sorted(FASES.items(), key=lambda kv: kv[1]['numero']):
+        nombre, numero = cfg['nombre'], cfg['numero']
         base = os.path.join(RAIZ, carpeta)
         if not os.path.isdir(base):
             continue
         fase = {'carpeta': carpeta, 'nombre': nombre, 'numero': numero,
-                'pagina': 'fase-{}.html'.format(numero), 'actividades': []}
+                'pagina': 'fase-{}.html'.format(numero),
+                'paleta': paleta_fase(cfg['color'], 'Fase {}'.format(numero)),
+                'actividades': []}
         for act in sorted(os.listdir(base)):
             ruta_act = os.path.join(base, act)
             if not os.path.isdir(ruta_act):
@@ -295,8 +364,8 @@ def recolectar():
                     origen = ''
                     if compartido:
                         raiz_origen = ova.split('/')[0]
-                        origen = FASES.get(raiz_origen, ('', 0))[0]
-                        origen = 'Fase {} · {}'.format(FASES[raiz_origen][1], origen) if raiz_origen in FASES else ''
+                        origen = ('Fase {numero} · {nombre}'.format(**FASES[raiz_origen])
+                                  if raiz_origen in FASES else '')
                     actividad['materiales'].append({
                         'orden': orden,
                         'titulo': titulo,
@@ -536,7 +605,8 @@ def portada(fases, secciones, linea):
         glosa = fase['actividades'][0]['descripcion'] if fase['actividades'] else ''
         glosa = re.sub(r'^AP\d+\.\s*', '', glosa)
         p.append(
-            '<a class="banda" data-fase-banda="{n}" href="{href}" data-lleva-consulta="{href}">'
+            '<a class="banda" data-fase-banda="{n}" style="{vars}" href="{href}" '
+            'data-lleva-consulta="{href}">'
             '<span class="banda-interior">'
             '<span class="banda-numero">{n}</span>'
             '<span class="banda-cuerpo"><h2 class="banda-nombre">{nombre}</h2>'
@@ -549,6 +619,7 @@ def portada(fases, secciones, linea):
             '<span class="banda-flecha">{flecha}</span>'
             '</span></a>'.format(
                 n=fase['numero'], href=url(fase['pagina']), nombre=e(fase['nombre']),
+                vars=vars_fase(fase['paleta']),
                 glosa=e(glosa), g=guias, o=ovas, d=desc,
                 pg='guía' if guias == 1 else 'guías',
                 pd='descarga' if desc == 1 else 'descargas',
@@ -576,7 +647,8 @@ def portada(fases, secciones, linea):
 
 
 def pagina_fase(fase, fases, linea):
-    p = ['<header class="cabecera-fase"><div class="contenedor">']
+    p = ['<header class="cabecera-fase" style="{}"><div class="contenedor">'.format(
+        vars_fase(fase['paleta']))]
     p.append('<nav class="migas"><a href="index.html" data-lleva-consulta="index.html">'
              'Gestión de redes de datos</a><span>›</span><span>Fase {}</span></nav>'.format(
                  fase['numero']))

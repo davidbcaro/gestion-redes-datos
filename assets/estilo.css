@@ -17,75 +17,40 @@
 }
 
 :root {
-  /* Chapa del tablero */
-  --tablero: #0b2e1a;
-  --tablero-alto: #103d24;
-  --tablero-linea: #1d5334;
-
-  /* Campos de zona: una escala que va del verde SENA al azul institucional,
-     de modo que cada fase tenga su propio campo y no solo su numeral. Todos
-     los valores sostienen texto blanco por encima de 11:1. */
-  --zona-1: #103d1b;
-  --zona-2: #0a3a38;
-  --zona-3: #0b3348;
-  --zona-4: #072a45;
-
-  /* La versión apagada de cada zona: una fase sin coincidencias baja de tono
-     pero no pierde su color, porque el campo es su identificación. */
-  --zona-1-off: #0a1f10;
-  --zona-2-off: #081d1c;
-  --zona-3-off: #081a24;
-  --zona-4-off: #051622;
-
   /* Marcas de señal */
-  --verde: #39a900;          /* verde SENA: numerales y marcas vivas */
-  --verde-vivo: #5fd424;     /* estado interactivo sobre tablero */
-  --verde-texto: #2e7d00;    /* el verde, ya legible sobre papel (5.2:1) */
-  --amarillo: #fdc300;       /* lo activo, lo encontrado, lo urgente */
+  --verde: #39a900;          /* verde SENA: la marca de identidad */
+  --verde-texto: #2e7d00;    /* el mismo verde, legible sobre papel (5.2:1) */
+  --amarillo: #fdc300;       /* lo activo, lo encontrado */
 
   /* Muro */
   --papel: #f2f5f1;
   --panel: #ffffff;
   --ink: #0a1710;
   --ink-medio: #405146;
-  --ink-tenue: #566a5e;   /* 5.9:1 sobre papel: soporta texto pequeño */
+  --ink-tenue: #566a5e;      /* 5.9:1 sobre papel: soporta texto pequeño */
   --filete: #cbd4cc;
   --filete-suave: #e2e8e2;
 
-  --medida: 68ch;
-  --ancho: 1180px;
-  /* Tintas sobre el campo oscuro, de más a menos presencia */
-  --etiqueta-campo-vivo: #cfe3d5;
-  --etiqueta-campo: #8fb39c;
-  --etiqueta-campo-suave: #9fc4ae;
-
-  /* Tinta sobre el amarillo de «encontrado»: el amarillo nunca lleva blanco */
-  --sobre-verde: #08210b;    /* tinta sobre el verde SENA lleno */
+  /* Tintas sobre fondos llenos */
+  --sobre-verde: #08210b;
   --sobre-amarillo: #22190a;
   --sobre-amarillo-suave: #5c4a08;
 
-  /* Estado apagado: la fase sin coincidencias */
-  --apagado-marca: #5a7a66;
-  --apagado-texto: #7f9689;
+  /* Campo de fase por defecto. Cada banda y cada cabecera de fase lo
+     sobreescribe con el color configurado en herramientas/generar_sitio.py,
+     junto con su tinta, su numeral y su versión apagada, todos derivados de
+     ese color. Estos valores solo entran si faltara el de la fase. */
+  --campo: var(--panel);
+  --campo-tinta: var(--ink);
+  --campo-suave: var(--ink-medio);
+  --campo-numeral: var(--verde-texto);
+  --campo-apagado: var(--papel);
+
+  --medida: 68ch;
+  --ancho: 1180px;
   --franja: 52px;
 
   color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-tema='claro']) {
-    /* El muro se hunde y el panel sube: la fila sigue leyéndose como una placa
-       montada sobre la pared, no como un bloque negro continuo. */
-    --papel: #050906;
-    --panel: #131e17;
-    --ink: #e8efe9;
-    --ink-medio: #a9baae;
-    --ink-tenue: #86998c;
-    --verde-texto: #5fd424;
-    --filete: #2a3a30;
-    --filete-suave: #1b2721;
-    color-scheme: dark;
-  }
 }
 
 * { box-sizing: border-box; }
@@ -128,7 +93,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 30;
-  background: var(--tablero);
+  background: var(--panel);
   border-bottom: 4px solid var(--verde);
 }
 
@@ -145,20 +110,20 @@ body {
   gap: 10px;
   min-width: 0;            /* la barra tiene que poder encogerse en móvil */
   text-decoration: none;
-  color: #fff;
+  color: var(--ink);
   font-weight: 900;
   font-size: 0.94rem;
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
-.franja-marca .sigla { flex: none; color: var(--verde-vivo); }
+.franja-marca .sigla { flex: none; color: var(--verde-texto); }
 
 /* El nombre del programa cede espacio antes que la sigla o el código: es lo
    único de los tres que el aprendiz puede reconstruir por contexto. */
 .franja-marca .prog {
   font-weight: 700;
-  color: var(--etiqueta-campo-vivo);
+  color: var(--ink-medio);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -172,7 +137,7 @@ body {
   font-weight: 700;
   font-size: 0.8rem;
   letter-spacing: 0.14em;
-  color: var(--etiqueta-campo);
+  color: var(--ink-tenue);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -184,8 +149,8 @@ body {
   position: sticky;
   top: var(--franja);
   z-index: 29;
-  background: var(--tablero-alto);
-  border-bottom: 1px solid var(--tablero-linea);
+  background: var(--panel);
+  border-bottom: 1px solid var(--filete);
 }
 
 .consulta-caja { position: relative; display: flex; align-items: center; }
@@ -196,15 +161,15 @@ body {
   padding: 0 56px 0 52px;
   border: 0;
   background: transparent;
-  color: #fff;
-  caret-color: var(--amarillo);
+  color: var(--ink);
+  caret-color: var(--verde-texto);
   font-family: inherit;
   font-size: clamp(1.05rem, 2.6vw, 1.5rem);
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 
-.consulta input::placeholder { color: var(--etiqueta-campo-suave); font-weight: 500; }
+.consulta input::placeholder { color: var(--ink-tenue); font-weight: 500; }
 
 /* Un solo tratamiento de foco: la regla inferior se enciende, como el renglón
    activo de un tablero. Nada de recuadros de alarma. */
@@ -219,7 +184,7 @@ body {
 .consulta .lupa {
   position: absolute;
   left: 14px;
-  color: var(--verde-vivo);
+  color: var(--verde-texto);
   pointer-events: none;
   line-height: 0;
 }
@@ -244,8 +209,9 @@ body {
 
 /* Recuento: el programa siempre se ve finito y contable. */
 .recuento {
-  background: var(--tablero);
-  color: var(--etiqueta-campo);
+  background: var(--papel);
+  border-bottom: 1px solid var(--filete);
+  color: var(--ink-tenue);
   font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -254,25 +220,25 @@ body {
 }
 
 .recuento .contenedor { padding-top: 9px; padding-bottom: 9px; }
-.recuento b { color: var(--amarillo); font-weight: 900; }
+.recuento b { color: var(--ink); font-weight: 900; }
 
 /* ------------------------------------------------------------ 3. El tablero */
-/* Cuatro bandas de zona a sangre. */
+/* Cuatro bandas de zona a sangre. El color de cada una llega desde el marcado
+   en --campo (ver FASES en herramientas/generar_sitio.py); la tinta, el numeral
+   y el apagado se derivan de él, así que cambiar el color no rompe nada. */
 
-/* Columna flexible para que el filtro pueda reordenar las bandas por número de
-   coincidencias sin tocar el DOM. La banda ocupa todo el ancho —el campo de
-   zona va a sangre— y su interior es el que se centra al ancho de la página. */
 .tablero {
-  background: var(--tablero);
+  background: var(--papel);
   display: flex;
   flex-direction: column;
 }
 
 .banda {
   display: block;
+  background: var(--campo);
+  color: var(--campo-tinta);
   border-bottom: 4px solid var(--papel);
   text-decoration: none;
-  color: #fff;
   transition: filter 160ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -287,41 +253,27 @@ body {
 }
 
 .banda-interior > * { min-width: 0; }
-
-/* Cada fase tiene su campo. Es lo que convierte una lista en un directorio. */
-.banda[data-fase-banda='1'] { background: var(--zona-1); }
-.banda[data-fase-banda='2'] { background: var(--zona-2); }
-.banda[data-fase-banda='3'] { background: var(--zona-3); }
-.banda[data-fase-banda='4'] { background: var(--zona-4); }
+.banda-cuerpo { min-width: 0; overflow-wrap: break-word; }
 
 /* Una fase sin coincidencias no se borra: se apaga. La ausencia es el dato, y
-   el campo conserva su zona para no perder la codificación justo cuando el
+   el campo conserva su color para no perder la codificación justo cuando el
    tablero está informando sobre ella. */
-.banda.apagada[data-fase-banda='1'] { background: var(--zona-1-off); }
-.banda.apagada[data-fase-banda='2'] { background: var(--zona-2-off); }
-.banda.apagada[data-fase-banda='3'] { background: var(--zona-3-off); }
-.banda.apagada[data-fase-banda='4'] { background: var(--zona-4-off); }
-.banda.apagada .banda-numero { color: var(--apagado-marca); }
-.banda.apagada .banda-glosa,
-.banda.apagada .cifras { color: var(--apagado-texto); }
-.banda.apagada .banda-flecha { color: var(--apagado-marca); }
-
-/* Sin esto, el contenido de la columna fluida impone su ancho mínimo y la
-   página desborda a lo ancho en pantallas estrechas. */
-.banda-cuerpo { min-width: 0; }
-.banda-cuerpo { overflow-wrap: break-word; }
+.banda.apagada { background: var(--campo-apagado); }
+.banda.apagada .banda-numero,
+.banda.apagada .banda-flecha,
+.banda.apagada .cifras .coincide { color: var(--campo-suave); }
 
 .banda:last-of-type { border-bottom: 0; }
-.banda:hover, .banda:focus-visible { filter: brightness(1.45); }
-.banda:hover .banda-numero { color: var(--amarillo); }
-.banda:hover .banda-flecha { transform: translateX(6px); color: var(--amarillo); }
+.banda:hover, .banda:focus-visible { filter: brightness(0.955); }
+.banda:hover .banda-numero { color: var(--campo-tinta); }
+.banda:hover .banda-flecha { transform: translateX(6px); color: var(--campo-tinta); }
 
 .banda-numero {
   font-size: clamp(3.4rem, 11vw, 7.5rem);
   font-weight: 900;
   line-height: 0.82;
   letter-spacing: -0.04em;
-  color: var(--verde-vivo);
+  color: var(--campo-numeral);
   font-variant-numeric: tabular-nums;
   transition: color 160ms ease-out;
 }
@@ -338,7 +290,7 @@ body {
 .banda-glosa {
   margin: 0 0 10px;
   max-width: 58ch;
-  color: #b7cfc0;
+  color: var(--campo-suave);
   font-size: 0.94rem;
   font-weight: 500;
   line-height: 1.45;
@@ -353,22 +305,27 @@ body {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--etiqueta-campo);
+  color: var(--campo-suave);
   font-variant-numeric: tabular-nums;
 }
 
-.cifras b { color: #fff; font-weight: 900; font-size: 1rem; letter-spacing: 0; }
-.cifras .coincide { color: var(--amarillo); }
+.cifras b { color: var(--campo-tinta); font-weight: 900; font-size: 1rem; letter-spacing: 0; }
+.cifras .coincide { color: var(--verde-texto); }
 
 .banda-flecha {
-  color: var(--verde-vivo);
+  color: var(--campo-numeral);
   transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), color 160ms ease-out;
   line-height: 0;
 }
 
 /* ---------------------------------------------- 4. Encabezado de fase/sección */
 
-.cabecera-fase { background: var(--tablero); color: #fff; padding: clamp(22px, 4vw, 40px) 0; }
+.cabecera-fase {
+  background: var(--campo);
+  color: var(--campo-tinta);
+  padding: clamp(22px, 4vw, 40px) 0;
+  border-bottom: 4px solid var(--verde);
+}
 
 .migas {
   display: flex;
@@ -379,11 +336,11 @@ body {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--etiqueta-campo);
+  color: var(--campo-suave);
 }
 
-.migas a { color: var(--verde-vivo); text-decoration: none; }
-.migas a:hover { color: var(--amarillo); text-decoration: underline; }
+.migas a { color: var(--campo-numeral); text-decoration: none; }
+.migas a:hover { color: var(--campo-tinta); text-decoration: underline; }
 
 .cabecera-fase .titular {
   display: grid;
@@ -404,7 +361,7 @@ body {
 .cabecera-fase .glosa {
   margin: 12px 0 0;
   max-width: var(--medida);
-  color: #b7cfc0;
+  color: var(--campo-suave);
   font-size: 1rem;
   line-height: 1.5;
 }
@@ -653,15 +610,16 @@ a.fila:hover .fila-serie, a.fila:focus-visible .fila-serie { color: var(--sobre-
 
 .pie {
   margin-top: 56px;
-  background: var(--tablero);
-  color: var(--etiqueta-campo);
+  background: var(--panel);
+  border-top: 4px solid var(--verde);
+  color: var(--ink-tenue);
   padding: 26px 0;
   font-size: 0.8rem;
   font-weight: 600;
 }
 
 .pie .contenedor { display: flex; flex-wrap: wrap; gap: 6px 26px; }
-.pie b { color: #fff; font-weight: 900; letter-spacing: 0.04em; }
+.pie b { color: var(--ink); font-weight: 900; letter-spacing: 0.04em; }
 
 /* ------------------------------------------------------------------- Móvil */
 

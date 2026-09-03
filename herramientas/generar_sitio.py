@@ -84,6 +84,7 @@ NOMBRES_CORREGIDOS = {
     'Todo sobre la telefonia IP': 'Todo sobre la telefonía IP',
     'VLAN Redes Locales Virtuales': 'VLAN: redes locales virtuales',
     'Documentos de interes para el aprendiz': 'Documentos de interés para el aprendiz',
+    'Comunicacion oral y escrita': 'Comunicación oral y escrita',
 }
 
 
@@ -289,6 +290,7 @@ def recolectar():
                     serie = ''
                     if '. ' in limpio and titulo.lower() not in limpio.lower():
                         serie = limpio.split('. ')[0]
+                        serie = NOMBRES_CORREGIDOS.get(serie, serie)
                     compartido = bool(ova) and not ova.startswith(rel_t)
                     origen = ''
                     if compartido:
@@ -325,26 +327,28 @@ def recolectar():
     return fases, secciones
 
 
-# --------------------------------------------------------------------------- plantillas
+# --------------------------------------------------------------------------- señalética
+# El sitio se compone como el directorio de una estación: franja de identidad
+# fija, buscador como control único, y bandas de zona a sangre.
 
-LUPA = ('<svg class="lupa" width="17" height="17" viewBox="0 0 24 24" fill="none" '
-        'stroke="currentColor" stroke-width="2" stroke-linecap="round">'
-        '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>')
+LUPA = ('<svg class="lupa" width="22" height="22" viewBox="0 0 24 24" fill="none" '
+        'stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true">'
+        '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>')
 
-FLECHA = ('<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
-          'stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
-          '<path d="M7 17 17 7M9 7h8v8"/></svg>')
+FLECHA = ('<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+          'stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+          '<path d="M5 12h13M12 5l7 7-7 7"/></svg>')
 
-DESCARGA = ('<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
-            'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
-            '<path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14"/></svg>')
+SALIR = ('<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+         'stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+         '<path d="M7 17 17 7M9 7h8v8"/></svg>')
+
+BAJAR = ('<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+         'stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+         '<path d="M12 4v11m0 0 4.5-4.5M12 15l-4.5-4.5M5 19h14"/></svg>')
 
 
-def pagina(titulo, cuerpo, indice=None, descripcion=''):
-    idx = ''
-    if indice is not None:
-        idx = '<script>window.INDICE={};</script>'.format(
-            json.dumps(indice, ensure_ascii=False, separators=(',', ':')))
+def pagina(titulo, cuerpo, descripcion='', fase='', reposo=''):
     return '''<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -352,105 +356,118 @@ def pagina(titulo, cuerpo, indice=None, descripcion=''):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{titulo}</title>
 <meta name="description" content="{descripcion}">
-<link rel="stylesheet" href="{css}">
+<link rel="preload" href="assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/estilo.css">
 </head>
-<body>
+<body{fase}>
+{franja}
+{consulta}
+{recuento}
 {cuerpo}
 <footer class="pie"><div class="contenedor">
   <span><b>SENA</b> · Servicio Nacional de Aprendizaje</span>
-  <span>{programa} · Código {codigo}</span>
-  <span>Material de uso formativo. Los objetos de aprendizaje se presentan sin modificaciones.</span>
+  <span>{programa} · Código {codigo} · {nivel}</span>
+  <span>Los objetos de aprendizaje se presentan sin modificaciones.</span>
 </div></footer>
-{idx}
-<script src="{js}"></script>
+<script src="assets/indice.js"></script>
+<script src="assets/sitio.js"></script>
 </body>
 </html>
-'''.format(titulo=e(titulo), descripcion=e(descripcion), cuerpo=cuerpo, idx=idx,
-           css='assets/estilo.css', js='assets/sitio.js',
-           programa=e(PROGRAMA['nombre']), codigo=e(PROGRAMA['codigo']))
+'''.format(
+        titulo=e(titulo), descripcion=e(descripcion), cuerpo=cuerpo,
+        fase=' data-fase="{}"'.format(fase) if fase else '',
+        franja=franja(), consulta=consulta(), recuento=barra_recuento(reposo),
+        programa=e(PROGRAMA['nombre']), codigo=e(PROGRAMA['codigo']),
+        nivel=e(PROGRAMA['nivel']))
 
 
-def cabecera(titulo, subtitulo='', migas=None, ficha=True):
-    partes = ['<header class="cabecera"><div class="contenedor">']
-    if migas:
-        enlaces = ''.join(
-            ('<a href="{}">{}</a>'.format(url(h), e(t)) if h else '<b>{}</b>'.format(e(t)))
-            + ('<span>&rsaquo;</span>' if i < len(migas) - 1 else '')
-            for i, (t, h) in enumerate(migas))
-        partes.append('<nav class="migas" style="padding:0 0 14px">{}</nav>'.format(enlaces))
-    else:
-        partes.append('<div class="marca"><span class="punto"></span>'
-                      'Servicio Nacional de Aprendizaje · SENA</div>')
-    partes.append('<h1>{}</h1>'.format(e(titulo)))
-    if subtitulo:
-        partes.append('<p class="proyecto">{}</p>'.format(e(subtitulo)))
-    if ficha:
-        partes.append(
-            '<ul class="ficha">'
-            '<li>Código <b>{codigo}</b></li>'
-            '<li><b>{nivel}</b></li>'
-            '<li><b>{horas}</b> horas</li>'
-            '<li>{duracion}</li>'
-            '<li>Modalidad {modalidad}</li>'
-            '</ul>'.format(**{k: e(v) for k, v in PROGRAMA.items()}))
-    partes.append('</div></header>')
-    return ''.join(partes)
+def franja():
+    return ('<header class="franja"><div class="contenedor">'
+            '<a class="franja-marca" href="index.html" data-lleva-consulta="index.html">'
+            '<span class="sigla">SENA</span><span class="prog">{prog}</span></a>'
+            '<span class="franja-codigo">{codigo} · {nivel}</span>'
+            '</div></header>').format(
+        prog=e(PROGRAMA['nombre']), codigo=e(PROGRAMA['codigo']),
+        nivel=e(PROGRAMA['nivel'].upper()))
 
 
-def chip_descarga(archivo, prefijo='', texto=None):
+def consulta():
+    return ('<div class="consulta"><div class="contenedor"><div class="consulta-caja">'
+            '{lupa}'
+            '<label class="solo-lectores" for="buscador">Buscar en todo el programa</label>'
+            '<input id="buscador" type="search" autocomplete="off" spellcheck="false" '
+            'placeholder="Buscar una guía, un OVA o un documento…">'
+            '<button id="limpiar" class="consulta-limpiar" type="button">Limpiar</button>'
+            '</div></div></div>').format(lupa=LUPA)
+
+
+def barra_recuento(reposo):
+    return ('<div class="recuento"><div class="contenedor">'
+            '<span id="recuento" data-reposo="{r}" aria-live="polite">{r}</span>'
+            '</div></div>').format(r=e(reposo))
+
+
+def chip_descarga(archivo, texto=None):
     return ('<a class="boton boton-archivo" href="{href}" download title="{nombre}">'
-            '<span class="etiqueta-tipo">{tipo}</span>'
-            '<span>{titulo}</span>'
-            '<span class="tamano">{peso}</span>{icono}</a>').format(
-        href=prefijo + url(archivo['ruta']), nombre=e(archivo['nombre']),
+            '<span class="tipo">{tipo}</span><span>{titulo}</span>'
+            '<span class="peso">{peso}</span>{icono}</a>').format(
+        href=url(archivo['ruta']), nombre=e(archivo['nombre']),
         tipo=e(archivo['etiqueta']), titulo=e(texto or archivo['titulo'][:46]),
-        peso=e(archivo['peso']), icono=DESCARGA)
+        peso=e(archivo['peso']), icono=BAJAR)
 
 
-def tarjeta_guia(guia):
-    piezas = ['<article class="tarjeta" data-buscable="{}">'.format(
-        e('Guía de aprendizaje {} {}'.format(guia['numero'],
-          ' '.join(a['titulo'] for a in guia['anexos']))))]
-    piezas.append('<div class="encabezado-tarjeta">'
-                  '<span class="orden">{:02d}</span>'
-                  '<h3>Guía de aprendizaje {}</h3></div>'.format(guia['numero'], guia['numero']))
+def fila_guia(guia):
+    buscable = 'Guía de aprendizaje {} {}'.format(
+        guia['numero'], ' '.join(a['titulo'] for a in guia['anexos']))
+    p = ['<article class="fila" data-buscable="{}">'.format(e(buscable))]
+    p.append('<span class="fila-orden">{:02d}</span><div class="fila-cuerpo">'.format(guia['numero']))
+    p.append('<h3 class="fila-titulo">Guía de aprendizaje {}</h3>'.format(guia['numero']))
     if guia['anexos']:
-        piezas.append('<p>{} anexo{} de apoyo</p>'.format(
-            len(guia['anexos']), '' if len(guia['anexos']) == 1 else 's'))
-    piezas.append('<div class="acciones">')
+        p.append('<span class="fila-serie">{}</span>'.format(
+            e(plural(len(guia['anexos']), 'anexo') + ' de apoyo')))
+    p.append('<div class="acciones">')
     if guia['pdf']:
-        piezas.append(chip_descarga(guia['pdf']))
+        p.append(chip_descarga(guia['pdf']))
     for a in guia['anexos']:
-        piezas.append(chip_descarga(a))
-    piezas.append('</div></article>')
-    return ''.join(piezas)
+        p.append(chip_descarga(a))
+    p.append('</div></div></article>')
+    return ''.join(p)
 
 
-def tarjeta_material(material):
+def fila_material(material):
     buscable = ' '.join([material['titulo'], material['serie'], material['carpeta']] +
                         [d['titulo'] for d in material['descargas']])
-    piezas = ['<article class="tarjeta" data-buscable="{}">'.format(e(buscable))]
-    piezas.append('<div class="encabezado-tarjeta"><span class="orden">{}</span><div>'.format(
+    p = ['<article class="fila" data-buscable="{}">'.format(e(buscable))]
+    p.append('<span class="fila-orden">{}</span><div class="fila-cuerpo">'.format(
         e(material['orden'] or '·')))
-    if material['serie']:
-        piezas.append('<span class="serie">{}</span>'.format(e(material['serie'])))
-    piezas.append('<h3>{}</h3></div></div>'.format(e(material['titulo'])))
-    if material['compartido'] and material['origen']:
-        piezas.append('<p class="aviso">Mismo objeto de aprendizaje de {}</p>'.format(
+    titulo = ('{}: {}'.format(material['serie'], material['titulo'])
+              if material['serie'] else material['titulo'])
+    p.append('<h3 class="fila-titulo">{}</h3>'.format(e(titulo)))
+
+    # Lo ausente y lo compartido se dibujan, no se omiten.
+    if not material['ova']:
+        p.append('<span class="marca marca-sin-ova">Sin OVA · solo descarga</span>')
+    elif material['compartido'] and material['origen']:
+        p.append('<span class="marca marca-compartido">Mismo OVA de {}</span>'.format(
             e(material['origen'])))
-    piezas.append('<div class="acciones">')
+
+    p.append('<div class="acciones">')
     if material['ova']:
-        piezas.append('<a class="boton boton-ova" href="{}" target="_blank" rel="noopener">'
-                      'Abrir OVA {}</a>'.format(url(material['ova']), FLECHA))
-    else:
-        piezas.append('<span class="sin-ova">Sin objeto virtual; solo material descargable.</span>')
+        p.append('<a class="boton boton-ova" href="{}" target="_blank" rel="noopener">'
+                 'Abrir OVA{}</a>'.format(url(material['ova']), SALIR))
     for d in material['descargas']:
-        piezas.append(chip_descarga(d))
-    piezas.append('</div></article>')
-    return ''.join(piezas)
+        p.append(chip_descarga(d))
+    p.append('</div></div></article>')
+    return ''.join(p)
 
 
-# --------------------------------------------------------------------------- paginas
+def rotulo(titulo, cuenta=''):
+    return ('<div class="rotulo"><h2>{}</h2>{}</div>').format(
+        e(titulo),
+        '<span class="cuenta">{}</span>'.format(e(cuenta)) if cuenta else '')
+
+
+# --------------------------------------------------------------------------- índice
 
 def normalizar(texto):
     t = unicodedata.normalize('NFD', texto.lower())
@@ -462,31 +479,32 @@ def ancla(texto):
 
 
 def construir_indice(fases, secciones):
-    """Indice plano para el buscador de la portada."""
+    """Índice plano de todo el programa; se sirve una vez y se cachea."""
     idx = []
     for fase in fases:
         donde = 'Fase {} · {}'.format(fase['numero'], fase['nombre'])
+        n = fase['numero']
         for act in fase['actividades']:
             for g in act['guias']:
                 if g['pdf']:
                     idx.append({'t': 'Guía de aprendizaje {}'.format(g['numero']),
-                                'd': donde, 'k': 'PDF', 'u': url(g['pdf']['ruta']), 'n': 1})
+                                'd': donde, 'k': 'PDF', 'u': url(g['pdf']['ruta']), 'f': n})
                 for a in g['anexos']:
                     idx.append({'t': a['titulo'], 'd': donde + ' · Guía {}'.format(g['numero']),
-                                'k': a['etiqueta'], 'u': url(a['ruta']), 'n': 1})
+                                'k': a['etiqueta'], 'u': url(a['ruta']), 'f': n})
             for m in act['materiales']:
                 if m['ova']:
                     idx.append({'t': m['titulo'], 'd': donde + ' · OVA',
-                                'k': 'OVA', 'u': url(m['ova']), 'n': 1})
+                                'k': 'OVA', 'u': url(m['ova']), 'f': n})
                 for d in m['descargas']:
                     idx.append({'t': d['titulo'], 'd': donde + ' · ' + m['titulo'],
-                                'k': d['etiqueta'], 'u': url(d['ruta']), 'n': 1})
+                                'k': d['etiqueta'], 'u': url(d['ruta']), 'f': n})
     for sec in secciones:
         for grupo in sec['grupos']:
             donde = sec['nombre'] + (' · ' + grupo['nombre'] if grupo['nombre'] else '')
             for a in grupo['archivos']:
                 idx.append({'t': a['titulo'], 'd': donde,
-                            'k': a['etiqueta'], 'u': url(a['ruta']), 'n': 1})
+                            'k': a['etiqueta'], 'u': url(a['ruta']), 'f': 0})
     return idx
 
 
@@ -498,168 +516,191 @@ def contar(fase):
     return guias, ovas, desc
 
 
-def portada(fases, secciones):
-    p = [cabecera(PROGRAMA['nombre'], PROGRAMA['proyecto'])]
-    p.append('<main><div class="contenedor">')
+def reposo(fases, secciones, total):
+    """La línea de recuento en reposo: el programa siempre finito y contable."""
+    guias = sum(contar(f)[0] for f in fases)
+    mats = sum(len(a['materiales']) for f in fases for a in f['actividades'])
+    return '{} · {} · {} · {} recursos'.format(
+        plural(len(fases), 'fase'), plural(guias, 'guía'),
+        plural(mats, 'material', 'materiales'), total)
 
-    p.append('<div class="buscador">{lupa}'
-             '<input id="buscador-global" type="search" autocomplete="off" '
-             'placeholder="Buscar una guía, un OVA o un documento en todo el programa…" '
-             'aria-label="Buscar en todo el programa"></div>'
-             '<ul class="resultados" id="resultados"></ul>'.format(lupa=LUPA))
 
-    p.append('<div class="titulo-seccion"><h2>Fases del proyecto formativo</h2>'
-             '<span class="cuenta">{} fases</span></div>'.format(len(fases)))
-    p.append('<div class="rejilla rejilla-fases">')
+# --------------------------------------------------------------------------- páginas
+
+def portada(fases, secciones, linea):
+    p = ['<main>']
+    p.append('<div class="contenedor"><ul class="resultados" id="resultados"></ul></div>')
+    p.append('<section class="tablero" aria-label="Fases del proyecto formativo">')
     for fase in fases:
         guias, ovas, desc = contar(fase)
-        descripcion = fase['actividades'][0]['descripcion'] if fase['actividades'] else ''
-        descripcion = re.sub(r'^AP\d+\.\s*', '', descripcion)
+        glosa = fase['actividades'][0]['descripcion'] if fase['actividades'] else ''
+        glosa = re.sub(r'^AP\d+\.\s*', '', glosa)
         p.append(
-            '<a class="tarjeta tarjeta-fase" href="{href}">'
-            '<span class="numero">{num}</span>'
-            '<h3>{nombre}</h3>'
-            '<p>{desc}</p>'
-            '<div class="resumen"><span><b>{g}</b> {pg}</span>'
-            '<span><b>{o}</b> OVA</span><span><b>{d}</b> {pd}</span></div>'
-            '<span class="flecha">Entrar {flecha}</span></a>'.format(
-                href=url(fase['pagina']), num=fase['numero'], nombre=e(fase['nombre']),
-                desc=e(descripcion), g=guias, o=ovas, d=desc, flecha=FLECHA,
+            '<a class="banda" data-fase-banda="{n}" href="{href}" data-lleva-consulta="{href}">'
+            '<span class="banda-interior">'
+            '<span class="banda-numero">{n}</span>'
+            '<span class="banda-cuerpo"><h2 class="banda-nombre">{nombre}</h2>'
+            '<p class="banda-glosa">{glosa}</p>'
+            '<span class="cifras">'
+            '<span><b>{g}</b> {pg}</span><span><b>{o}</b> OVA</span>'
+            '<span><b>{d}</b> {pd}</span>'
+            '<span class="coincide oculto" data-coincide></span>'
+            '</span></span>'
+            '<span class="banda-flecha">{flecha}</span>'
+            '</span></a>'.format(
+                n=fase['numero'], href=url(fase['pagina']), nombre=e(fase['nombre']),
+                glosa=e(glosa), g=guias, o=ovas, d=desc,
                 pg='guía' if guias == 1 else 'guías',
-                pd='descarga' if desc == 1 else 'descargas'))
-    p.append('</div>')
+                pd='descarga' if desc == 1 else 'descargas',
+                flecha=FLECHA))
+    p.append('</section>')
 
-    p.append('<div class="titulo-seccion"><h2>Documentación del programa</h2></div>')
-    p.append('<div class="rejilla">')
-    for sec in secciones:
+    p.append('<div class="contenedor">')
+    p.append(rotulo('Documentación del programa'))
+    p.append('<div class="filas">')
+    for i, sec in enumerate(secciones, 1):
         total = sum(len(g['archivos']) for g in sec['grupos'])
-        p.append('<a class="tarjeta tarjeta-fase" href="{href}" style="padding-top:18px">'
-                 '<h3>{nombre}</h3><p>{desc}</p>'
-                 '<div class="resumen"><span><b>{n}</b> {palabra}</span></div>'
-                 '<span class="flecha">Ver {flecha}</span></a>'.format(
-                     href='informacion-general.html#' + ancla(sec['nombre']),
-                     nombre=e(sec['nombre']), desc=e(sec['descripcion']), n=total,
-                     palabra='documento' if total == 1 else 'documentos', flecha=FLECHA))
-    p.append('</div>')
-    p.append('</div></main>')
-    return pagina(PROGRAMA['nombre'] + ' · SENA', ''.join(p),
-                  indice=construir_indice(fases, secciones),
+        p.append('<a class="fila" href="informacion-general.html#{ancla}">'
+                 '<span class="fila-orden">{i:02d}</span>'
+                 '<div class="fila-cuerpo">'
+                 '<h3 class="fila-titulo">{nombre}</h3>'
+                 '<span class="fila-serie">{n}</span>'
+                 '</div><span class="fila-ir">{flecha}</span></a>'.format(
+                     i=i, nombre=e(sec['nombre']), n=e(plural(total, 'documento')),
+                     ancla=ancla(sec['nombre']), flecha=FLECHA))
+    p.append('</div></div></main>')
+    return pagina(PROGRAMA['nombre'] + ' · SENA', ''.join(p), reposo=linea,
                   descripcion='Guías, objetos virtuales de aprendizaje y material '
-                              'descargable del programa por fase y actividad de proyecto.')
+                              'descargable del programa 228183, por fase y actividad '
+                              'de proyecto.')
 
 
-def pagina_fase(fase, fases):
-    migas = [(PROGRAMA['nombre'], 'index.html'),
-             ('Fase {} · {}'.format(fase['numero'], fase['nombre']), None)]
-    p = [cabecera('Fase {} · {}'.format(fase['numero'], fase['nombre']),
-                  fase['actividades'][0]['descripcion'] if fase['actividades'] else '',
-                  migas=migas, ficha=False)]
+def pagina_fase(fase, fases, linea):
+    p = ['<header class="cabecera-fase"><div class="contenedor">']
+    p.append('<nav class="migas"><a href="index.html" data-lleva-consulta="index.html">'
+             'Gestión de redes de datos</a><span>›</span><span>Fase {}</span></nav>'.format(
+                 fase['numero']))
+    p.append('<div class="titular"><span class="banda-numero">{}</span>'
+             '<h1>{}</h1></div>'.format(fase['numero'], e(fase['nombre'])))
+    if fase['actividades'] and fase['actividades'][0]['descripcion']:
+        p.append('<p class="glosa">{}</p>'.format(e(fase['actividades'][0]['descripcion'])))
+    p.append('</div></header>')
+
     p.append('<main><div class="contenedor">')
-
-    total_mat = sum(len(a['materiales']) for a in fase['actividades'])
-    p.append('<div class="buscador">{lupa}'
-             '<input id="filtro" type="search" autocomplete="off" '
-             'placeholder="Filtrar en esta fase…" aria-label="Filtrar materiales de la fase">'
-             '</div>'.format(lupa=LUPA))
-
+    p.append('<ul class="resultados" id="resultados"></ul>')
     for act in fase['actividades']:
         if act['guias']:
             p.append('<section data-bloque>')
-            p.append('<div class="titulo-seccion"><h2>{}</h2>'
-                     '<span class="cuenta">{}</span></div>'.format(
-                         e(act['nombre'] + ' · Guías de aprendizaje'),
-                         plural(len(act['guias']), 'guía')))
-            p.append('<div class="rejilla">')
+            p.append(rotulo(act['nombre'] + ' · Guías de aprendizaje',
+                            plural(len(act['guias']), 'guía')))
+            p.append('<div class="filas">')
             for g in act['guias']:
-                p.append(tarjeta_guia(g))
+                p.append(fila_guia(g))
             p.append('</div></section>')
-
         if act['materiales']:
             p.append('<section data-bloque>')
-            p.append('<div class="titulo-seccion"><h2>Materiales de formación</h2>'
-                     '<span class="cuenta">{}</span></div>'.format(
-                         plural(len(act['materiales']), 'material', 'materiales')))
-            p.append('<div class="rejilla">')
+            p.append(rotulo('Materiales de formación',
+                            plural(len(act['materiales']), 'material', 'materiales')))
+            p.append('<div class="filas">')
             for m in act['materiales']:
-                p.append(tarjeta_material(m))
+                p.append(fila_material(m))
             p.append('</div></section>')
 
-    p.append('<div class="titulo-seccion"><h2>Ir a</h2></div><div class="acciones">')
+    p.append(rotulo('Ir a'))
+    p.append('<div class="salidas">')
     for f in fases:
         if f['numero'] == fase['numero']:
             continue
-        p.append('<a class="boton boton-archivo" href="{}">Fase {} · {}</a>'.format(
-            url(f['pagina']), f['numero'], e(f['nombre'])))
-    p.append('<a class="boton boton-archivo" href="informacion-general.html">'
-             'Documentación del programa</a>'
-             '<a class="boton boton-archivo" href="index.html">Inicio</a></div>')
-    p.append('</div></main>')
+        p.append('<a class="boton boton-archivo" href="{href}" data-lleva-consulta="{href}">'
+                 '<span class="tipo">{n}</span>{nombre}</a>'.format(
+                     href=url(f['pagina']), n=f['numero'], nombre=e(f['nombre'])))
+    p.append('<a class="boton boton-archivo" href="informacion-general.html" '
+             'data-lleva-consulta="informacion-general.html">Documentación</a>')
+    p.append('</div></div></main>')
+
+    total_mat = sum(len(a['materiales']) for a in fase['actividades'])
     return pagina('Fase {} · {} — {}'.format(fase['numero'], fase['nombre'], PROGRAMA['nombre']),
-                  ''.join(p),
-                  descripcion='{} guías y {} materiales de formación de la fase de {}.'.format(
-                      sum(len(a['guias']) for a in fase['actividades']), total_mat, fase['nombre']))
+                  ''.join(p), fase=str(fase['numero']), reposo=linea,
+                  descripcion='{} y {} de la fase de {}.'.format(
+                      plural(sum(len(a['guias']) for a in fase['actividades']), 'guía'),
+                      plural(total_mat, 'material de formación', 'materiales de formación'),
+                      fase['nombre']))
 
 
-def pagina_documentacion(secciones, fases):
-    migas = [(PROGRAMA['nombre'], 'index.html'), ('Documentación del programa', None)]
-    p = [cabecera('Documentación del programa',
-                  'Información institucional, cronograma, actividades iniciales y etapa productiva.',
-                  migas=migas, ficha=False)]
+def pagina_documentacion(secciones, fases, linea):
+    p = ['<header class="cabecera-fase"><div class="contenedor">']
+    p.append('<nav class="migas"><a href="index.html" data-lleva-consulta="index.html">'
+             'Gestión de redes de datos</a><span>›</span><span>Documentación</span></nav>')
+    p.append('<div class="titular"><h1>Documentación del programa</h1></div>')
+    p.append('<p class="glosa">Información institucional, cronograma, actividades '
+             'iniciales y etapa productiva.</p>')
+    p.append('</div></header>')
+
     p.append('<main><div class="contenedor">')
-    p.append('<div class="buscador">{lupa}'
-             '<input id="filtro" type="search" autocomplete="off" '
-             'placeholder="Filtrar documentos…" aria-label="Filtrar documentos"></div>'.format(lupa=LUPA))
+    p.append('<ul class="resultados" id="resultados"></ul>')
     for sec in secciones:
-        p.append('<section data-bloque id="{}">'.format(e(ancla(sec['nombre']))))
         total = sum(len(g['archivos']) for g in sec['grupos'])
-        p.append('<div class="titulo-seccion"><h2>{}</h2>'
-                 '<span class="cuenta">{}</span></div>'.format(
-                     e(sec['nombre']), plural(total, 'documento')))
-        p.append('<div class="rejilla">')
+        p.append('<section data-bloque id="{}">'.format(e(ancla(sec['nombre']))))
+        p.append(rotulo(sec['nombre'], plural(total, 'documento')))
+        # Cada grupo lleva su propio encabezado y su propia numeración, en vez
+        # de repetir el nombre del grupo como etiqueta sobre cada fila.
         for grupo in sec['grupos']:
-            for a in grupo['archivos']:
-                p.append('<article class="tarjeta" data-buscable="{buscable}">'
-                         '<div class="encabezado-tarjeta"><span class="orden">{tipo}</span>'
-                         '<div>{serie}<h3>{titulo}</h3></div></div>'
-                         '<div class="acciones">{chip}</div></article>'.format(
+            if grupo['nombre']:
+                p.append('<h3 class="rotulo-sub">{}</h3>'.format(
+                    e(NOMBRES_CORREGIDOS.get(grupo['nombre'], grupo['nombre']))))
+            p.append('<div class="filas">')
+            for i, a in enumerate(grupo['archivos'], 1):
+                p.append('<article class="fila" data-buscable="{buscable}">'
+                         '<span class="fila-orden">{i:02d}</span><div class="fila-cuerpo">'
+                         '<h4 class="fila-titulo">{titulo}</h4>'
+                         '<div class="acciones">{chip}</div></div></article>'.format(
                              buscable=e('{} {} {}'.format(a['titulo'], grupo['nombre'] or '',
                                                           sec['nombre'])),
-                             tipo=e(a['etiqueta'][:3]),
-                             serie=('<span class="serie">{}</span>'.format(
-                                 e(NOMBRES_CORREGIDOS.get(grupo['nombre'], grupo['nombre'])))
-                                    if grupo['nombre'] else ''),
-                             titulo=e(a['titulo']), chip=chip_descarga(a, texto='Descargar')))
-        p.append('</div></section>')
-    p.append('<div class="titulo-seccion"><h2>Ir a</h2></div><div class="acciones">')
+                             i=i, titulo=e(a['titulo']),
+                             chip=chip_descarga(a, texto='Descargar')))
+            p.append('</div>')
+        p.append('</section>')
+
+    p.append(rotulo('Ir a'))
+    p.append('<div class="salidas">')
     for f in fases:
-        p.append('<a class="boton boton-archivo" href="{}">Fase {} · {}</a>'.format(
-            url(f['pagina']), f['numero'], e(f['nombre'])))
-    p.append('<a class="boton boton-archivo" href="index.html">Inicio</a>')
+        p.append('<a class="boton boton-archivo" href="{href}" data-lleva-consulta="{href}">'
+                 '<span class="tipo">{n}</span>{nombre}</a>'.format(
+                     href=url(f['pagina']), n=f['numero'], nombre=e(f['nombre'])))
     p.append('</div></div></main>')
     return pagina('Documentación del programa — ' + PROGRAMA['nombre'], ''.join(p),
-                  descripcion='Documentos institucionales, cronograma y etapa productiva.')
+                  reposo=linea,
+                  descripcion='Documentos institucionales, cronograma, actividades '
+                              'iniciales y etapa productiva del programa 228183.')
 
 
 def escribir(nombre, contenido):
-    with open(os.path.join(RAIZ, nombre), 'w', encoding='utf-8', newline='\n') as f:
+    ruta = os.path.join(RAIZ, *nombre.split('/'))
+    os.makedirs(os.path.dirname(ruta), exist_ok=True)
+    with open(ruta, 'w', encoding='utf-8', newline='\n') as f:
         f.write(contenido)
     print('  {:30s} {:>6.0f} KB'.format(nombre, len(contenido.encode('utf-8')) / 1024))
 
 
 def main():
     fases, secciones = recolectar()
-    escribir('index.html', portada(fases, secciones))
+    idx = construir_indice(fases, secciones)
+    linea = reposo(fases, secciones, len(idx))
+
+    escribir('assets/indice.js',
+             'window.INDICE=' + json.dumps(idx, ensure_ascii=False, separators=(',', ':')) + ';\n')
+    escribir('index.html', portada(fases, secciones, linea))
     for fase in fases:
-        escribir(fase['pagina'], pagina_fase(fase, fases))
-    escribir('informacion-general.html', pagina_documentacion(secciones, fases))
+        escribir(fase['pagina'], pagina_fase(fase, fases, linea))
+    escribir('informacion-general.html', pagina_documentacion(secciones, fases, linea))
     with open(os.path.join(RAIZ, '.nojekyll'), 'w', encoding='utf-8') as f:
         f.write('')
+
     guias = sum(len(a['guias']) for f in fases for a in f['actividades'])
     ovas = sum(1 for f in fases for a in f['actividades'] for m in a['materiales'] if m['ova'])
     mats = sum(len(a['materiales']) for f in fases for a in f['actividades'])
-    print('\n.nojekyll listo (GitHub Pages no procesara el sitio con Jekyll)')
-    print('{} fases | {} guias | {} materiales ({} con OVA)'.format(
-        len(fases), guias, mats, ovas))
+    print('\n{} fases | {} guias | {} materiales ({} con OVA) | {} recursos indexados'.format(
+        len(fases), guias, mats, ovas, len(idx)))
 
 
 if __name__ == '__main__':

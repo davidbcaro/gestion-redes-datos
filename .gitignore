@@ -9,6 +9,15 @@
 #     python herramientas/extraer_ovas.py
 material.zip
 
+# Herramientas de impeccable para harnesses que no se usan en este proyecto.
+# `.claude/` si se versiona, para que la configuracion sea reproducible.
+# Reinstalar con:  npx impeccable install
+.cursor/
+.grok/
+.codex/
+.claude/
+.impeccable/
+
 # Sistema
 Thumbs.db
 desktop.ini

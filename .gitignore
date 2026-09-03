@@ -1,0 +1,15 @@
+# Paquetes originales de los OVA.
+#
+# Se conservan en el disco local y siguen estando en el historial de Git, pero no
+# se publican: su contenido ya viaja descomprimido en las carpetas `ova/`, que es
+# lo que el sitio necesita. Mantenerlos ademas duplicaria 582 MB y el sitio
+# superaria el limite de 1 GB de GitHub Pages.
+#
+# Para regenerar las carpetas `ova/` desde estos paquetes:
+#     python herramientas/extraer_ovas.py
+material.zip
+
+# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store

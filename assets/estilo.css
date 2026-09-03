@@ -21,6 +21,8 @@
   --verde: #39a900;          /* verde SENA: la marca de identidad */
   --verde-texto: #2e7d00;    /* el mismo verde, legible sobre papel (5.2:1) */
   --amarillo: #fdc300;       /* lo activo, lo encontrado */
+  --azul-franja: #04324d;    /* campo institucional de la portada */
+  --niebla: #eaefed;         /* tinta clara sobre el azul de portada */
 
   /* Muro */
   --papel: #f2f5f1;
@@ -93,7 +95,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 30;
-  background: var(--panel);
+  background: var(--azul-franja);
   border-bottom: 4px solid var(--verde);
 }
 
@@ -110,20 +112,25 @@ body {
   gap: 10px;
   min-width: 0;            /* la barra tiene que poder encogerse en móvil */
   text-decoration: none;
-  color: var(--ink);
+  color: var(--niebla);
   font-weight: 900;
   font-size: 0.94rem;
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
-.franja-marca .sigla { flex: none; color: var(--verde-texto); }
+.franja-marca .sigla {
+  flex: none;
+  color: var(--verde);
+  font-size: 1.2rem;
+  line-height: 1;
+}
 
 /* El nombre del programa cede espacio antes que la sigla o el código: es lo
    único de los tres que el aprendiz puede reconstruir por contexto. */
 .franja-marca .prog {
   font-weight: 700;
-  color: var(--ink-medio);
+  color: var(--niebla);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -137,7 +144,7 @@ body {
   font-weight: 700;
   font-size: 0.8rem;
   letter-spacing: 0.14em;
-  color: var(--ink-tenue);
+  color: var(--niebla);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -610,16 +617,16 @@ a.fila:hover .fila-serie, a.fila:focus-visible .fila-serie { color: var(--sobre-
 
 .pie {
   margin-top: 56px;
-  background: var(--panel);
+  background: var(--azul-franja);
   border-top: 4px solid var(--verde);
-  color: var(--ink-tenue);
+  color: var(--niebla);
   padding: 26px 0;
   font-size: 0.8rem;
   font-weight: 600;
 }
 
 .pie .contenedor { display: flex; flex-wrap: wrap; gap: 6px 26px; }
-.pie b { color: var(--ink); font-weight: 900; letter-spacing: 0.04em; }
+.pie b { color: var(--niebla); font-weight: 900; letter-spacing: 0.04em; }
 
 /* ------------------------------------------------------------------- Móvil */
 

@@ -5,6 +5,8 @@ colors:
   verde: "#39a900"
   verde-texto: "#2e7d00"
   amarillo: "#fdc300"
+  azul-franja: "#04324d"
+  niebla: "#eaefed"
   sobre-verde: "#08210b"
   sobre-amarillo: "#22190a"
   sobre-amarillo-suave: "#5c4a08"
@@ -259,6 +261,12 @@ yellow that means "found".
   3px focus outline, the selection highlight, the lit underline of the focused search field, and
   the flood behind a hovered row or button. It is never used as text: on a light surface yellow
   type cannot reach 4.5:1, so the match counters that used to be yellow are Verde Texto.
+
+- **Azul de franja** (`{colors.azul-franja}`): the institutional field of every identity strip
+  and footer. It gives the whole site a stronger arrival and departure signal without changing
+  the light directory fields between them.
+- **Niebla** (`{colors.niebla}`): the light ink used for programme text, code and footer copy on
+  the blue surfaces.
 - **Sobre Amarillo** (`{colors.sobre-amarillo}`) is the primary ink on that ground, **Sobre
   Amarillo Suave** (`{colors.sobre-amarillo-suave}`) the secondary, for the series tag and result
   location inside a hovered row. Yellow never carries white.
@@ -501,10 +509,10 @@ angle and pitch is native to this world; smooth tonal gradients as decoration ar
   Amarillo on hover.
 
 ### Navigation
-- **Identity strip:** sticky 52px white bar with a 4px Verde SENA bottom rule. `SENA` in Verde
-  Texto, the programme name in Ink Medio at 700, both uppercase at Marca size; the code and level
-  push right in Ink Tenue at Label LG, tracked and tabular. Under pressure the programme name
-  ellipses first and disappears below 420px; the acronym and code never shrink out.
+- **Identity strip:** sticky 52px bar with a 4px Verde SENA bottom rule. It uses Azul de franja
+  with Niebla text and the SENA mark in Verde SENA across the portada, phase and documentation
+  pages. The programme name and code remain uppercase, tracked and tabular. Under pressure the
+  programme name ellipses first and disappears below 420px; the acronym and code never shrink out.
 - **Breadcrumbs:** Label size in `--campo-suave` on the phase header, links in `--campo-numeral`
   going to full `--campo-tinta` and underlined on hover — so the breadcrumb is coloured by the
   phase it sits in.

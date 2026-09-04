@@ -544,20 +544,12 @@ a.fila:hover .fila-serie, a.fila:focus-visible .fila-serie { color: var(--sobre-
 }
 
 .boton-archivo:hover .tipo, .boton-archivo:focus-visible .tipo { color: var(--amarillo); }
-.boton-archivo:hover .peso, .boton-archivo:focus-visible .peso { color: var(--papel); }
 
 .tipo {
   font-size: 0.68rem;
   font-weight: 900;
   letter-spacing: 0.08em;
   color: var(--verde-texto);
-}
-
-.peso {
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: var(--ink-tenue);
-  font-variant-numeric: tabular-nums;
 }
 
 /* ------------------------------------------------------- 8. Resultados y vacío */
@@ -633,10 +625,8 @@ a.fila:hover .fila-serie, a.fila:focus-visible .fila-serie { color: var(--sobre-
 @media (max-width: 700px) {
   .banda-interior { grid-template-columns: minmax(58px, 20%) 1fr auto; row-gap: 8px; }
   .banda-flecha svg { width: 22px; height: 22px; }
-  /* El peso no se parte dentro de la píldora. */
   .boton { padding: 9px 12px; }
-  .boton-archivo > span:not(.tipo):not(.peso) { min-width: 0; }
-  .peso { white-space: nowrap; }
+  .boton-archivo > span:not(.tipo) { min-width: 0; }
   .fila { grid-template-columns: 44px 1fr; }
   a.fila { grid-template-columns: 44px 1fr auto; }
   .fila-orden { font-size: 1.2rem; }

@@ -180,13 +180,6 @@ def url(ruta_rel):
     return quote(ruta_rel.replace(os.sep, '/'))
 
 
-def peso(ruta):
-    n = os.path.getsize(ruta)
-    if n >= 1048576:
-        return '{:.1f} MB'.format(n / 1048576).replace('.0 ', ' ')
-    return '{:.0f} KB'.format(max(n / 1024, 1))
-
-
 def firma(ruta):
     h = hashlib.md5()
     with open(ruta, 'rb') as f:
@@ -279,7 +272,6 @@ def archivos_de(carpeta, saltar=(), contexto='documento', principal=None):
             'ruta': os.path.relpath(ruta, RAIZ),
             'etiqueta': etiqueta,
             'clase': clase,
-            'peso': peso(ruta),
         })
     return salida
 
@@ -478,11 +470,10 @@ def barra_recuento(reposo):
 
 def chip_descarga(archivo, texto=None):
     return ('<a class="boton boton-archivo" href="{href}" download title="{nombre}">'
-            '<span class="tipo">{tipo}</span><span>{titulo}</span>'
-            '<span class="peso">{peso}</span>{icono}</a>').format(
+            '<span class="tipo">{tipo}</span><span>{titulo}</span>{icono}</a>').format(
         href=url(archivo['ruta']), nombre=e(archivo['nombre']),
         tipo=e(archivo['etiqueta']), titulo=e(texto or archivo['titulo'][:46]),
-        peso=e(archivo['peso']), icono=BAJAR)
+        icono=BAJAR)
 
 
 def fila_guia(guia):

@@ -617,8 +617,14 @@ a.fila:hover .fila-serie, a.fila:focus-visible .fila-serie { color: var(--sobre-
   font-weight: 600;
 }
 
-.pie .contenedor { display: flex; flex-wrap: wrap; gap: 6px 26px; }
+.pie .contenedor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px 26px;
+}
 .pie b { color: var(--niebla); font-weight: 900; letter-spacing: 0.04em; }
+.pie .contenedor > span:last-child { justify-self: end; }
 .pie-autor { display: inline-flex; align-items: center; gap: 8px; }
 .pie-github {
   display: inline-flex;
@@ -627,7 +633,11 @@ a.fila:hover .fila-serie, a.fila:focus-visible .fila-serie { color: var(--sobre-
   text-decoration: none;
   transition: color 140ms ease-out;
 }
-.pie-github:hover, .pie-github:focus-visible { color: var(--verde); }
+.pie-github:link,
+.pie-github:visited,
+.pie-github:hover,
+.pie-github:focus-visible { color: var(--niebla); }
+.pie-github svg { display: block; fill: currentColor; }
 
 /* ------------------------------------------------------------------- Móvil */
 
@@ -644,6 +654,8 @@ a.fila:hover .fila-serie, a.fila:focus-visible .fila-serie { color: var(--sobre-
   .resultados .donde { grid-column: 2; text-align: left; }
   .rotulo { flex-wrap: wrap; }
   .rotulo .cuenta { margin-left: 0; width: 100%; }
+  .pie .contenedor { display: flex; flex-wrap: wrap; }
+  .pie .contenedor > span:last-child { margin-left: auto; }
 }
 
 /* -------------------------------------------------------------- Movimiento */

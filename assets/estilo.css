@@ -619,6 +619,15 @@ a.fila:hover .fila-serie, a.fila:focus-visible .fila-serie { color: var(--sobre-
 
 .pie .contenedor { display: flex; flex-wrap: wrap; gap: 6px 26px; }
 .pie b { color: var(--niebla); font-weight: 900; letter-spacing: 0.04em; }
+.pie-autor { display: inline-flex; align-items: center; gap: 8px; }
+.pie-github {
+  display: inline-flex;
+  color: var(--niebla);
+  line-height: 0;
+  text-decoration: none;
+  transition: color 140ms ease-out;
+}
+.pie-github:hover, .pie-github:focus-visible { color: var(--verde); }
 
 /* ------------------------------------------------------------------- Móvil */
 

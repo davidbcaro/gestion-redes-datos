@@ -428,7 +428,7 @@ def pagina(titulo, cuerpo, descripcion='', fase='', reposo=''):
 <footer class="pie"><div class="contenedor">
   <span><b>SENA</b> · Servicio Nacional de Aprendizaje</span>
   <span>{programa} · Código {codigo} · {nivel}</span>
-  <span>Los objetos de aprendizaje se presentan sin modificaciones.</span>
+  <span class="pie-autor">David Bohorquez · <a class="pie-github" href="https://github.com/davidbcaro" target="_blank" rel="noopener noreferrer" aria-label="GitHub de David Bohorquez" title="GitHub de David Bohorquez"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.084-.729.084-.729 1.205.085 1.84 1.237 1.84 1.237 1.07 1.834 2.809 1.305 3.495.998.108-.776.418-1.305.762-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.046.138 3.006.404 2.292-1.552 3.297-1.23 3.297-1.23.647 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.43.372.81 1.102.81 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.63-5.373-12-12-12"/></svg></a></span>
 </div></footer>
 <script src="assets/indice.js"></script>
 <script src="assets/sitio.js"></script>

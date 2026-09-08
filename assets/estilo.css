@@ -624,7 +624,8 @@ a.fila:hover .fila-serie, a.fila:focus-visible .fila-serie { color: var(--sobre-
   gap: 6px 26px;
 }
 .pie b { color: var(--niebla); font-weight: 900; letter-spacing: 0.04em; }
-.pie .contenedor > span:last-child { justify-self: end; }
+.pie .contenedor > span:nth-child(2) { grid-column: 3; justify-self: end; }
+.pie .contenedor > span:last-child { grid-column: 2; justify-self: center; }
 .pie-autor { display: inline-flex; align-items: center; gap: 8px; }
 .pie-github {
   display: inline-flex;
@@ -655,7 +656,8 @@ a.fila:hover .fila-serie, a.fila:focus-visible .fila-serie { color: var(--sobre-
   .rotulo { flex-wrap: wrap; }
   .rotulo .cuenta { margin-left: 0; width: 100%; }
   .pie .contenedor { display: flex; flex-wrap: wrap; }
-  .pie .contenedor > span:last-child { margin-left: auto; }
+  .pie .contenedor > span:nth-child(2) { order: 3; margin-left: auto; }
+  .pie .contenedor > span:last-child { order: 2; margin-left: 0; }
 }
 
 /* -------------------------------------------------------------- Movimiento */
